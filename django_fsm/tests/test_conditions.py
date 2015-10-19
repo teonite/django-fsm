@@ -48,3 +48,18 @@ class ConditionalTest(TestCase):
 
         self.assertTrue(can_proceed(self.model.destroy,
                                     check_conditions=False))
+
+
+class AvailableTransitionsTest(TestCase):
+    def setUp(self):
+        self.model = BlogPostWithConditions()
+
+    def test_available_transitions(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+        available_transitions = self.model.get_available_state_transitions()
+        self.assertFalse('destroy' in [t.name for t in available_transitions])
+
+        available_transitions = self.model.get_available_state_transitions(check_conditions=False)
+        self.assertTrue('destroy' in [t.name for t in available_transitions])

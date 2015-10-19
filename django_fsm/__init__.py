@@ -90,10 +90,10 @@ class Transition(object):
             return False
 
 
-def get_available_FIELD_transitions(instance, field):
+def get_available_FIELD_transitions(instance, field, check_conditions=True):
     """
-    List of transitions available in current model state
-    with all conditions met
+    List of transitions available in current model state.
+    The availability checking takes conditions into consideration only if check_conditions param is set to True.
     """
     curr_state = field.get_state(instance)
     transitions = field.transitions[instance.__class__]
@@ -104,7 +104,7 @@ def get_available_FIELD_transitions(instance, field):
         for state in [curr_state, '*']:
             if state in meta.transitions:
                 transition = meta.transitions[state]
-                if all(map(lambda condition: condition(instance), transition.conditions)):
+                if not check_conditions or all(map(lambda condition: condition(instance), transition.conditions)):
                     yield transition
 
 
@@ -115,12 +115,12 @@ def get_all_FIELD_transitions(instance, field):
     return field.get_all_transitions(instance.__class__)
 
 
-def get_available_user_FIELD_transitions(instance, user, field):
+def get_available_user_FIELD_transitions(instance, user, field, check_conditions=True):
     """
-    List of transitions available in current model state
-    with all conditions met and user have rights on it
+    List of transitions available in current model state and for the given user's permissions.
+    The availability checking takes conditions into consideration only if check_conditions param is set to True.
     """
-    for transition in get_available_FIELD_transitions(instance, field):
+    for transition in get_available_FIELD_transitions(instance, field, check_conditions):
         if transition.has_perm(user):
             yield transition
 
